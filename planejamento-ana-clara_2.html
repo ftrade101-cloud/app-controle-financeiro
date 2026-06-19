@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planejamento Profissional · Ana Clara</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --base:#EEF3F1;
+  --surface:#FFFFFF;
+  --ink:#16221E;
+  --ink-soft:#5A6864;
+  --line:#E2E9E6;
+  --teal-deep:#0E4A43;
+  --teal:#1C7A6D;
+  --teal-bg:#DCEAE7;
+  --teal-bg-soft:#EAF2F0;
+  --amber:#B97524;
+  --amber-bg:#F6EBDA;
+  --neutral:#97A29E;
+  --danger:#B5453A;
+  --danger-bg:#F7E5E3;
+  --shadow:0 1px 2px rgba(16,40,35,.05), 0 8px 24px rgba(16,40,35,.06);
+}
+
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:#C7D3CF;font-family:'Inter',sans-serif;color:var(--ink)}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px 12px}
+
+.device{
+  width:100%;max-width:402px;height:846px;max-height:92vh;
+  background:var(--base);border-radius:38px;overflow:hidden;position:relative;
+  box-shadow:0 30px 70px rgba(13,38,33,.28), 0 0 0 9px #11201C, 0 0 0 10px #2b3a35;
+  display:flex;flex-direction:column;
+}
+
+.head{background:var(--teal-deep);color:#EAF3F0;padding:54px 22px 18px;position:relative;flex-shrink:0}
+.ecg{position:absolute;left:0;right:0;bottom:0;height:26px;opacity:.32}
+.brand{display:flex;align-items:center;gap:11px}
+.mono-mark{width:42px;height:42px;border-radius:13px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.mono-mark::before,.mono-mark::after{content:"";position:absolute;background:#7FD3C4;border-radius:2px}
+.mono-mark::before{width:16px;height:4px}
+.mono-mark::after{width:4px;height:16px}
+.brand h1{font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;letter-spacing:-.02em;line-height:1}
+.brand p{font-size:11.5px;color:#9CC4BD;margin-top:3px;letter-spacing:.01em}
+.gear{margin-left:auto;width:38px;height:38px;border-radius:11px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#CDE6E1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+.gear:hover{background:rgba(255,255,255,.14)}
+.gear:active{transform:scale(.92)}
+.gear svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+.month-bar{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.month-bar .m-label{font-family:'Bricolage Grotesque';font-weight:600;font-size:15px;text-transform:capitalize;letter-spacing:-.01em}
+.month-bar .m-label span{color:#84B3AC;font-family:'IBM Plex Mono';font-weight:400;font-size:13px;margin-left:5px}
+.m-nav{display:flex;gap:7px}
+.m-nav button{width:32px;height:32px;border-radius:10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#CDE6E1;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.m-nav button:hover{background:rgba(255,255,255,.14)}
+.m-nav button:active{transform:scale(.92)}
+
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:18px 16px 96px}
+.scroll::-webkit-scrollbar{width:0}
+.view{display:none;animation:rise .42s cubic-bezier(.2,.7,.2,1)}
+.view.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+.dow{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:6px}
+.dow span{text-align:center;font-family:'IBM Plex Mono';font-size:10.5px;color:var(--ink-soft);font-weight:500;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cell{aspect-ratio:1/1.12;border-radius:12px;background:transparent;border:1px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:7px;font-family:'IBM Plex Mono';font-size:13px;color:var(--ink);position:relative;cursor:default;transition:.14s}
+.cell.pad{color:#C0CCC8;font-weight:400}
+.cell.has{background:var(--surface);border-color:var(--line);box-shadow:0 1px 1px rgba(16,40,35,.03);cursor:pointer;font-weight:500}
+.cell.has:hover{border-color:var(--teal);transform:translateY(-1px)}
+.cell.has:active{transform:scale(.96)}
+.cell.today{box-shadow:0 0 0 2px var(--teal)}
+.cell .dots{position:absolute;bottom:7px;display:flex;gap:3px}
+.cell .dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
+.cell .dot.pix{background:var(--amber)}
+.cell .dot.cover{background:var(--neutral)}
+.cell .night{position:absolute;top:6px;right:6px;color:var(--teal);font-size:9px;line-height:1}
+
+.cal-summary{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 17px;box-shadow:var(--shadow)}
+.cal-summary .row1{display:flex;align-items:baseline;justify-content:space-between}
+.cal-summary .big{font-family:'Bricolage Grotesque';font-weight:700;font-size:23px;letter-spacing:-.02em}
+.cal-summary .cnt{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-soft)}
+.cal-summary .note{font-size:12px;color:var(--ink-soft);margin-top:11px;line-height:1.5;border-top:1px dashed var(--line);padding-top:11px}
+.cal-summary .note b{color:var(--teal);font-weight:600}
+.legend{display:flex;gap:14px;margin-top:13px;flex-wrap:wrap}
+.legend span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);font-family:'IBM Plex Mono'}
+.legend i{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+.ceiling{background:linear-gradient(160deg,#FFFFFF 0%,#FCF7EF 100%);border:1px solid var(--line);border-radius:22px;padding:22px 20px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.ceiling .tag{font-size:11.5px;color:var(--ink-soft);font-weight:500;letter-spacing:.01em}
+.ceiling .amount{font-family:'Bricolage Grotesque';font-weight:700;font-size:46px;color:var(--amber);letter-spacing:-.03em;line-height:1.05;margin-top:4px}
+.ceiling .amount small{font-size:21px;font-weight:600;margin-right:2px}
+.ceiling .sub{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.45}
+.ceiling .sub b{color:var(--ink);font-weight:600;text-transform:capitalize}
+.meter{display:flex;height:11px;border-radius:7px;overflow:hidden;margin-top:18px;background:var(--line)}
+.meter .seg-in{background:var(--teal)}
+.meter .seg-soon{background:var(--amber)}
+.split{display:flex;gap:10px;margin-top:13px}
+.split .s{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+.split .s .lbl{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-soft);font-family:'IBM Plex Mono';letter-spacing:.02em}
+.split .s .lbl i{width:7px;height:7px;border-radius:50%}
+.split .s .v{font-family:'Bricolage Grotesque';font-weight:700;font-size:18px;margin-top:5px;letter-spacing:-.02em}
+
+.sec-title{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin:24px 4px 10px}
+.entry{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.entry .ic{width:38px;height:38px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--teal-bg-soft)}
+.entry.pix .ic{background:var(--amber-bg)}
+.entry .mid{flex:1;min-width:0}
+.entry .mid .t{font-size:13.5px;font-weight:600;letter-spacing:-.01em}
+.entry .mid .d{font-family:'IBM Plex Mono';font-size:11px;color:var(--ink-soft);margin-top:3px}
+.entry .right{text-align:right;flex-shrink:0}
+.entry .right .val{font-family:'Bricolage Grotesque';font-weight:700;font-size:15px;letter-spacing:-.02em}
+.entry .right .st{font-family:'IBM Plex Mono';font-size:9.5px;margin-top:3px;padding:2px 7px;border-radius:20px;display:inline-block}
+.st.in{background:var(--teal-bg);color:var(--teal-deep)}
+.st.soon{background:var(--amber-bg);color:var(--amber)}
+
+.insight{background:var(--teal-deep);border-radius:18px;padding:16px 17px;margin-top:18px;color:#DCEDE9}
+.insight .h{display:flex;align-items:center;gap:7px;font-family:'Bricolage Grotesque';font-weight:600;font-size:13.5px;color:#FFF}
+.insight .h::before{content:"";width:6px;height:6px;border-radius:50%;background:#7FD3C4}
+.insight p{font-size:12.5px;line-height:1.55;margin-top:8px;color:#A9CEC7}
+.insight p b{color:#EAF7F4;font-weight:600}
+
+.empty{text-align:center;padding:50px 20px;color:var(--ink-soft)}
+.empty .big{font-family:'Bricolage Grotesque';font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
+.empty p{font-size:13px;line-height:1.5}
+
+.nav{position:absolute;left:0;right:0;bottom:0;height:78px;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-around;padding:0 26px 14px}
+.nav button{background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink-soft);font-family:'Inter';font-size:10.5px;font-weight:500;transition:.15s;flex:1}
+.nav button.on{color:var(--teal-deep)}
+.nav button svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.9}
+.fab{width:58px;height:58px;border-radius:19px;background:var(--teal-deep);flex:none !important;margin-top:-26px;box-shadow:0 10px 24px rgba(14,74,67,.42);color:#fff !important}
+.fab svg{width:26px !important;height:26px !important;stroke-width:2.2}
+.fab:active{transform:scale(.93)}
+
+.overlay{position:absolute;inset:0;background:rgba(16,33,29,.5);opacity:0;pointer-events:none;transition:.25s;z-index:20}
+.overlay.show{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--base);border-radius:26px 26px 0 0;padding:8px 18px calc(env(safe-area-inset-bottom) + 22px);transform:translateY(100%);transition:.3s cubic-bezier(.2,.8,.2,1);z-index:21;max-height:88%;overflow-y:auto}
+.sheet.show{transform:none}
+.sheet::-webkit-scrollbar{width:0}
+.grip{width:40px;height:4px;border-radius:3px;background:#C5D2CE;margin:8px auto 16px}
+.sheet h2{font-family:'Bricolage Grotesque';font-weight:700;font-size:19px;letter-spacing:-.02em}
+.sheet .day-sub{font-family:'IBM Plex Mono';font-size:12px;color:var(--ink-soft);margin-top:2px;margin-bottom:16px;text-transform:capitalize}
+
+.shift-card{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:9px}
+.shift-card .top{display:flex;justify-content:space-between;align-items:flex-start}
+.shift-card .time{font-family:'IBM Plex Mono';font-weight:500;font-size:15px;letter-spacing:-.01em}
+.shift-card .time .arr{color:var(--teal);font-size:12px;margin:0 3px}
+.shift-card .val{font-family:'Bricolage Grotesque';font-weight:700;font-size:16px}
+.shift-card .meta{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+.chip{font-family:'IBM Plex Mono';font-size:10.5px;padding:4px 9px;border-radius:8px;background:var(--teal-bg-soft);color:var(--teal-deep);display:flex;align-items:center;gap:4px}
+.chip.amber{background:var(--amber-bg);color:var(--amber)}
+.chip.gray{background:#EEF1F0;color:var(--ink-soft)}
+.card-actions{display:flex;gap:8px;margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+.card-actions button{flex:1;font-family:'Inter';font-size:12.5px;font-weight:600;padding:9px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;transition:.14s;display:flex;align-items:center;justify-content:center;gap:5px}
+.card-actions .edit{color:var(--teal-deep)}
+.card-actions .edit:hover{background:var(--teal-bg-soft);border-color:var(--teal)}
+.card-actions .del{color:var(--danger)}
+.card-actions .del:hover{background:var(--danger-bg);border-color:var(--danger)}
+.card-actions button svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.confirm-row{display:flex;align-items:center;gap:8px;margin-top:13px;border-top:1px solid var(--line);padding-top:11px}
+.confirm-row .ask{flex:1;font-size:12.5px;color:var(--danger);font-weight:600}
+.confirm-row button{font-family:'Inter';font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:10px;border:none;cursor:pointer}
+.confirm-row .yes{background:var(--danger);color:#fff}
+.confirm-row .no{background:#EEF1F0;color:var(--ink-soft)}
+
+.field{margin-bottom:15px}
+.field>label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:7px}
+.duo{display:flex;gap:10px}
+.duo>div{flex:1}
+input,select{width:100%;font-family:'Inter';font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 13px;outline:none;transition:.15s}
+input[type=time]{font-family:'IBM Plex Mono'}
+input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(28,122,109,.13)}
+.amt-wrap{position:relative}
+.amt-wrap span{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-family:'IBM Plex Mono';color:var(--ink-soft);font-size:14px}
+.amt-wrap input{padding-left:34px;font-family:'IBM Plex Mono';font-weight:500}
+.pay-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pay-opts button{font-family:'Inter';font-size:12px;font-weight:500;text-align:left;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.14s;line-height:1.3}
+.pay-opts button small{display:block;color:var(--ink-soft);font-size:10px;margin-top:2px;font-family:'IBM Plex Mono'}
+.pay-opts button.sel{border-color:var(--teal);background:var(--teal-bg-soft);box-shadow:0 0 0 2px rgba(28,122,109,.18)}
+.src-opts{display:flex;gap:8px}
+.src-opts button{flex:1;font-family:'Inter';font-size:12.5px;font-weight:500;padding:11px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;transition:.14s}
+.src-opts button.sel{border-color:var(--teal);background:var(--teal-bg-soft)}
+.save-btn{width:100%;background:var(--teal-deep);color:#fff;border:none;border-radius:14px;padding:15px;margin-top:8px;font-family:'Bricolage Grotesque';font-weight:600;font-size:15px;cursor:pointer;transition:.15s}
+.save-btn:active{transform:scale(.98)}
+.hint{font-size:11px;color:var(--ink-soft);margin-top:7px;line-height:1.4}
+
+.set-row{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 15px;margin-bottom:10px}
+.set-row .t{font-size:13.5px;font-weight:600}
+.set-row .d{font-size:12px;color:var(--ink-soft);margin-top:4px;line-height:1.5}
+.danger-btn{width:100%;background:var(--danger-bg);color:var(--danger);border:1px solid #E9C9C4;border-radius:13px;padding:14px;font-family:'Bricolage Grotesque';font-weight:600;font-size:14.5px;cursor:pointer;transition:.15s}
+.danger-btn:hover{background:#F3D9D5}
+.danger-btn:active{transform:scale(.98)}
+.danger-solid{background:var(--danger);color:#fff;border-color:var(--danger)}
+.danger-solid:hover{background:#9E372E}
+.warn-box{background:var(--danger-bg);border:1px solid #E9C9C4;border-radius:13px;padding:14px;margin-bottom:10px}
+.warn-box .wt{font-size:13px;font-weight:600;color:var(--danger)}
+.warn-box .wd{font-size:12px;color:#8A4039;margin-top:5px;line-height:1.5}
+.tiny-link{display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--ink-soft);background:none;border:none;width:100%;cursor:pointer;padding:8px}
+</style>
+</head>
+<body>
+<div class="device">
+
+  <div class="head">
+    <div class="brand">
+      <div class="mono-mark"></div>
+      <div>
+        <h1>Ana Clara</h1>
+        <p>Planejamento profissional · plantões</p>
+      </div>
+      <button class="gear" onclick="openSheet('set')" aria-label="ajustes">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 0 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 .9-1.4V3a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.4.9H21a2 2 0 0 1 0 4h-.1a1.6 1.6 0 0 0-1.4.9z"/></svg>
+      </button>
+    </div>
+    <div class="month-bar">
+      <div class="m-label" id="mLabel">maio <span>2026</span></div>
+      <div class="m-nav">
+        <button onclick="shiftMonth(-1)" aria-label="mês anterior">‹</button>
+        <button onclick="shiftMonth(1)" aria-label="próximo mês">›</button>
+      </div>
+    </div>
+    <svg class="ecg" viewBox="0 0 402 26" preserveAspectRatio="none">
+      <path d="M0,13 H120 l6,-9 l7,18 l6,-22 l7,26 l5,-13 H230 l6,-7 l6,14 l5,-7 H402" fill="none" stroke="#7FD3C4" stroke-width="1.4"/>
+    </svg>
+  </div>
+
+  <div class="scroll">
+    <div class="view active" id="calView">
+      <div class="dow"><span>dom</span><span>seg</span><span>ter</span><span>qua</span><span>qui</span><span>sex</span><span>sáb</span></div>
+      <div class="grid" id="calGrid"></div>
+      <div class="cal-summary" id="calSummary"></div>
+    </div>
+    <div class="view" id="moneyView"></div>
+  </div>
+
+  <div class="nav">
+    <button class="on" id="navCal" onclick="go('cal')">
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/></svg>
+      Calendário
+    </button>
+    <button class="fab" onclick="openAdd()" aria-label="adicionar plantão">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+    <button id="navMoney" onclick="go('money')">
+      <svg viewBox="0 0 24 24"><path d="M12 3v18M16.5 7.5c0-2-2-3-4.5-3s-4.5 1-4.5 3.2S9 11 12 11.5s4.5 1.3 4.5 3.5-2 3.2-4.5 3.2-4.5-1.2-4.5-3"/></svg>
+      Teto do mês
+    </button>
+  </div>
+
+  <div class="overlay" id="dayOverlay" onclick="closeSheet('day')"></div>
+  <div class="sheet" id="daySheet" onclick="event.stopPropagation()">
+    <div class="grip"></div>
+    <h2 id="dayTitle"></h2>
+    <div class="day-sub" id="daySub"></div>
+    <div id="dayList"></div>
+  </div>
+
+  <div class="overlay" id="addOverlay" onclick="closeSheet('add')"></div>
+  <div class="sheet" id="addSheet" onclick="event.stopPropagation()">
+    <div class="grip"></div>
+    <h2 id="addTitle">Novo plantão</h2>
+    <div class="day-sub" id="addSub">Registre o turno e o app organiza o dinheiro</div>
+
+    <div class="field">
+      <label>Começa</label>
+      <div class="duo">
+        <div><input type="date" id="fStartDate" value="2026-05-15"></div>
+        <div><input type="time" id="fStartTime" value="19:00"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Termina</label>
+      <div class="duo">
+        <div><input type="date" id="fEndDate" value="2026-05-15"></div>
+        <div><input type="time" id="fEndTime" value="07:00"></div>
+      </div>
+      <div class="hint">Plantão que vira a noite? É só pôr o dia seguinte no fim.</div>
+    </div>
+    <div class="field">
+      <label>Valor do plantão</label>
+      <div class="amt-wrap"><span>R$</span><input type="number" id="fAmount" placeholder="0" inputmode="numeric"></div>
+    </div>
+    <div class="field">
+      <label>Como recebe</label>
+      <div class="pay-opts" id="payOpts">
+        <button data-pay="pix" onclick="pickPay(this)">Pix na hora<small>cai hoje</small></button>
+        <button data-pay="next" class="sel" onclick="pickPay(this)">Fim do mês seguinte<small>app calcula</small></button>
+        <button data-pay="specific" onclick="pickPay(this)">Data específica<small>você escolhe</small></button>
+        <button data-pay="cover" onclick="pickPay(this)">Cobertura<small>sem pagamento</small></button>
+      </div>
+      <div class="field" id="specWrap" style="display:none;margin-top:10px;margin-bottom:0">
+        <input type="date" id="fPayDate" value="2026-06-24">
+      </div>
+    </div>
+    <div class="field">
+      <label>Quem passou o plantão</label>
+      <div class="src-opts" id="srcOpts">
+        <button data-src="fixo" class="sel" onclick="pickSrc(this)">Plantão fixo meu</button>
+        <button data-src="nome" onclick="pickSrc(this)">Peguei de alguém</button>
+      </div>
+      <div class="field" id="nameWrap" style="display:none;margin-top:10px;margin-bottom:0">
+        <input type="text" id="fName" placeholder="Nome de quem passou">
+      </div>
+    </div>
+    <div class="field">
+      <label>Local <span style="color:var(--ink-soft);font-weight:400">(opcional)</span></label>
+      <input type="text" id="fPlace" placeholder="Hospital Icaraí" value="Hospital Icaraí">
+    </div>
+    <button class="save-btn" id="saveBtn" onclick="saveShift()">Salvar plantão</button>
+  </div>
+
+  <div class="overlay" id="setOverlay" onclick="closeSheet('set')"></div>
+  <div class="sheet" id="setSheet" onclick="event.stopPropagation()">
+    <div class="grip"></div>
+    <h2>Ajustes</h2>
+    <div class="day-sub">Planejamento Profissional · Ana Clara</div>
+    <div class="set-row">
+      <div class="t">Tudo salvo no aparelho</div>
+      <div class="d">Seus plantões ficam guardados só aqui neste celular e funcionam sem internet. Nada vai pra nuvem.</div>
+    </div>
+    <div class="set-row">
+      <div class="t" id="countTitle">—</div>
+      <div class="d">plantões registrados no app</div>
+    </div>
+    <div class="sec-title" style="margin-left:2px">Zona de risco</div>
+    <div id="resetArea"></div>
+  </div>
+
+</div>
+
+<script>
+const STORE_KEY = 'acplan_shifts_v3';
+function isoToday(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+const TODAY = isoToday();
+const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+const MES_CURTO = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+let idSeq = 1;
+function newId(){ return 's'+(idSeq++)+'_'+Math.random().toString(36).slice(2,6); }
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function dstr(y,m,d){ return `${y}-${pad2(m)}-${pad2(d)}`; }
+function seed(){
+  const now=new Date();
+  const Y=now.getFullYear(), M=now.getMonth()+1;
+  let pY=Y, pM=M-1; if(pM<1){pM=12;pY--;}
+  const raw = [
+    // mês passado: trabalho que o hospital paga no dia 24 deste mês
+    [dstr(pY,pM,4),'07:00',dstr(pY,pM,4),'19:00',1200,'next','fixo',''],
+    [dstr(pY,pM,8),'07:00',dstr(pY,pM,8),'19:00',1200,'next','fixo',''],
+    [dstr(pY,pM,12),'19:00',dstr(pY,pM,13),'07:00',1400,'next','fixo',''],
+    [dstr(pY,pM,16),'07:00',dstr(pY,pM,16),'19:00',1200,'next','fixo',''],
+    [dstr(pY,pM,20),'07:00',dstr(pY,pM,20),'19:00',1200,'next','fixo',''],
+    [dstr(pY,pM,24),'19:00',dstr(pY,pM,25),'07:00',1400,'next','fixo',''],
+    [dstr(pY,pM,27),'07:00',dstr(pY,pM,27),'19:00',1100,'next','fixo',''],
+    // este mês: o que você está trabalhando agora
+    [dstr(Y,M,3),'07:00',dstr(Y,M,3),'19:00',1200,'pix','nome','Dra. Marina'],
+    [dstr(Y,M,6),'07:00',dstr(Y,M,6),'19:00',1200,'next','fixo',''],
+    [dstr(Y,M,10),'07:00',dstr(Y,M,10),'19:00',1300,'pix','nome','Dr. Heitor'],
+    [dstr(Y,M,14),'19:00',dstr(Y,M,15),'07:00',1400,'next','fixo',''],
+    [dstr(Y,M,20),'07:00',dstr(Y,M,20),'19:00',1200,'next','fixo',''],
+    [dstr(Y,M,24),'07:00',dstr(Y,M,24),'19:00',1100,'cover','nome','Dra. Beatriz'],
+    [dstr(Y,M,27),'19:00',dstr(Y,M,28),'07:00',1400,'next','fixo',''],
+  ];
+  return raw.map(r=>({id:newId(),startDate:r[0],startTime:r[1],endDate:r[2],endTime:r[3],amount:r[4],pay:r[5],src:r[6],name:r[7],place:'Hospital Icaraí'}));
+}
+
+let shifts = [];
+function load(){
+  try{ const saved=localStorage.getItem(STORE_KEY); if(saved!==null){ shifts=JSON.parse(saved); return; } }catch(e){}
+  shifts = seed(); save();
+}
+function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(shifts)); }catch(e){} }
+
+function payDate(s){
+  if(s.pay==='cover') return null;
+  if(s.pay==='pix') return s.startDate;
+  if(s.pay==='specific') return s.payDateValue;
+  const [y,m]=s.startDate.split('-').map(Number);
+  let ny=y,nm=m+1; if(nm>12){nm=1;ny++;}
+  return `${ny}-${String(nm).padStart(2,'0')}-24`;
+}
+const ym = d => d.slice(0,7);
+const brl = n => n.toLocaleString('pt-BR');
+
+const _now0 = new Date();
+let state = {
+  cal:   { y:_now0.getFullYear(), m:_now0.getMonth()+1 },
+  money: { y:_now0.getFullYear(), m:_now0.getMonth()+1 },
+  tab:'cal', openDayDate:null
+};
+function cur(){ return state.tab==='money' ? state.money : state.cal; }
+function monthKey(c){ return `${c.y}-${String(c.m).padStart(2,'0')}`; }
+function syncLabel(){ const c=cur(); document.getElementById('mLabel').innerHTML = `${MESES[c.m-1]} <span>${c.y}</span>`; }
+
+function shiftMonth(dir){
+  const c=cur();
+  c.m+=dir; if(c.m>12){c.m=1;c.y++;} if(c.m<1){c.m=12;c.y--;}
+  syncLabel();
+  if(state.tab==='money') renderMoney(); else renderCalendar();
+}
+function go(tab){
+  state.tab=tab;
+  document.getElementById('calView').classList.toggle('active', tab==='cal');
+  document.getElementById('moneyView').classList.toggle('active', tab==='money');
+  document.getElementById('navCal').classList.toggle('on', tab==='cal');
+  document.getElementById('navMoney').classList.toggle('on', tab==='money');
+  syncLabel();
+  document.querySelector('.scroll').scrollTop=0;
+}
+function render(){ renderCalendar(); renderMoney(); }
+
+function renderCalendar(){
+  const C=state.cal;
+  const key=monthKey(C);
+  const first=new Date(C.y,C.m-1,1).getDay();
+  const days=new Date(C.y,C.m,0).getDate();
+  const grid=document.getElementById('calGrid'); grid.innerHTML='';
+  const prevDays=new Date(C.y,C.m-1,0).getDate();
+  for(let i=0;i<first;i++){ const d=document.createElement('div'); d.className='cell pad'; d.textContent=prevDays-first+i+1; grid.appendChild(d); }
+  for(let day=1;day<=days;day++){
+    const dateStr=`${key}-${String(day).padStart(2,'0')}`;
+    const todays=shifts.filter(s=>s.startDate===dateStr);
+    const cell=document.createElement('div');
+    cell.className='cell'+(todays.length?' has':'')+(dateStr===TODAY?' today':'');
+    cell.innerHTML=`<span>${day}</span>`;
+    if(todays.length){
+      if(todays.some(s=>s.endDate!==s.startDate)) cell.innerHTML+=`<span class="night">◗</span>`;
+      let dots='<div class="dots">';
+      todays.forEach(s=>{ const c=s.pay==='pix'?'pix':(s.pay==='cover'?'cover':''); dots+=`<span class="dot ${c}"></span>`; });
+      cell.innerHTML+=dots+'</div>';
+      cell.onclick=()=>openDay(dateStr);
+    }
+    grid.appendChild(cell);
+  }
+  const worked=shifts.filter(s=>ym(s.startDate)===key);
+  const paid=worked.filter(s=>s.pay!=='cover');
+  const total=paid.reduce((a,s)=>a+s.amount,0);
+  const pixNow=paid.filter(s=>s.pay==='pix').reduce((a,s)=>a+s.amount,0);
+  const later=total-pixNow;
+  let nm=C.m+1; if(nm>12)nm=1; const nextLabel=MESES[nm-1];
+  const sum=document.getElementById('calSummary');
+  if(worked.length===0){ sum.innerHTML=`<div class="empty" style="padding:8px 0"><div class="big">Nenhum plantão aqui</div><p>Toque no + para registrar o primeiro turno deste mês.</p></div>`; return; }
+  let note='';
+  if(pixNow>0&&later>0) note=`Deste trabalho, <b>R$ ${brl(pixNow)}</b> cai agora em ${MESES[C.m-1]} (pix) e <b>R$ ${brl(later)}</b> entra como teto de <b>${nextLabel}</b>.`;
+  else if(later>0) note=`Esse trabalho vira o teto de gasto de <b>${nextLabel}</b>, quando o hospital paga.`;
+  else note=`Tudo recebido por pix, já caiu na sua conta neste mês.`;
+  sum.innerHTML=`
+    <div class="row1"><div class="big">R$ ${brl(total)}</div><div class="cnt">${paid.length} plantão${paid.length>1?'s':''} pago${paid.length>1?'s':''}</div></div>
+    <div class="legend"><span><i style="background:var(--teal)"></i>fim do mês</span><span><i style="background:var(--amber)"></i>pix na hora</span><span><i style="background:var(--neutral)"></i>cobertura</span></div>
+    <div class="note">${note}</div>`;
+}
+
+function openDay(dateStr){
+  state.openDayDate=dateStr;
+  const list=shifts.filter(s=>s.startDate===dateStr);
+  if(list.length===0){ closeSheet('day'); return; }
+  const [y,m,d]=dateStr.split('-');
+  const wd=['domingo','segunda','terça','quarta','quinta','sexta','sábado'][new Date(+y,+m-1,+d).getDay()];
+  document.getElementById('dayTitle').textContent=`${+d} de ${MESES[+m-1]}`;
+  document.getElementById('daySub').textContent=`${wd} · ${list.length} plantão${list.length>1?'s':''}`;
+  document.getElementById('dayList').innerHTML=list.map(s=>cardHtml(s)).join('');
+  openSheet('day');
+}
+
+function cardHtml(s){
+  const night=s.endDate!==s.startDate;
+  let payChip;
+  if(s.pay==='pix') payChip=`<span class="chip amber">⚡ pix na hora</span>`;
+  else if(s.pay==='cover') payChip=`<span class="chip gray">cobertura · sem R$</span>`;
+  else payChip=`<span class="chip">cai ${fmtShort(payDate(s))}</span>`;
+  const srcChip=s.src==='fixo'?`<span class="chip gray">plantão fixo</span>`:`<span class="chip gray">de ${s.name||'—'}</span>`;
+  return `<div class="shift-card" id="card_${s.id}">
+    <div class="top"><div class="time">${s.startTime}<span class="arr">→</span>${s.endTime}${night?`<span style="color:var(--ink-soft);font-size:11px"> (+1d)</span>`:''}</div><div class="val">${s.pay==='cover'?'—':'R$ '+brl(s.amount)}</div></div>
+    <div class="meta">${payChip}${srcChip}<span class="chip gray">${s.place||'—'}</span></div>
+    <div class="card-actions">
+      <button class="edit" onclick="openEdit('${s.id}')"><svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Editar</button>
+      <button class="del" onclick="askDelete('${s.id}')"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>Apagar</button>
+    </div></div>`;
+}
+
+function askDelete(id){
+  const card=document.getElementById('card_'+id);
+  card.querySelector('.card-actions').outerHTML=`<div class="confirm-row"><div class="ask">Apagar este plantão?</div><button class="no" onclick="openDay(state.openDayDate)">Não</button><button class="yes" onclick="doDelete('${id}')">Apagar</button></div>`;
+}
+function doDelete(id){ shifts=shifts.filter(s=>s.id!==id); save(); render(); openDay(state.openDayDate); }
+
+function fmtShort(d){ const [y,m,day]=d.split('-'); return `${+day} ${MES_CURTO[+m-1]}`; }
+
+function renderMoney(){
+  const Mo=state.money;
+  const key=monthKey(Mo);
+  const incoming=shifts.filter(s=>{ const pd=payDate(s); return pd&&ym(pd)===key; }).map(s=>({...s,pd:payDate(s)})).sort((a,b)=>a.pd<b.pd?-1:1);
+  const view=document.getElementById('moneyView');
+  if(incoming.length===0){ view.innerHTML=`<div class="empty"><div class="big">Nada entra em ${MESES[Mo.m-1]}</div><p>O teto deste mês é a soma do que cai na sua conta aqui. Registre plantões e eles aparecem no mês em que o dinheiro chega.</p></div>`; return; }
+  const total=incoming.reduce((a,s)=>a+s.amount,0);
+  const already=incoming.filter(s=>s.pd<=TODAY).reduce((a,s)=>a+s.amount,0);
+  const soon=total-already;
+  const pAl=total?(already/total*100):0, pSo=total?(soon/total*100):0;
+  const fromMonths={};
+  incoming.forEach(s=>{ const wm=+s.startDate.split('-')[1]; fromMonths[wm]=(fromMonths[wm]||0)+s.amount; });
+  const mainWorkMonth=Object.entries(fromMonths).sort((a,b)=>b[1]-a[1])[0];
+  const entriesHtml=incoming.map(s=>{
+    const isPix=s.pay==='pix', inAcct=s.pd<=TODAY, wm=+s.startDate.split('-')[1];
+    const title=isPix?`Pix · plantão ${(+s.startDate.split('-')[2])} ${MES_CURTO[wm-1]}`:`Plantão ${(+s.startDate.split('-')[2])} ${MES_CURTO[wm-1]}`;
+    return `<div class="entry ${isPix?'pix':''}"><div class="ic">${isPix?'⚡':'🩺'}</div><div class="mid"><div class="t">${title}</div><div class="d">trabalho de ${MESES[wm-1]} · cai ${fmtShort(s.pd)}</div></div><div class="right"><div class="val">R$ ${brl(s.amount)}</div><div class="st ${inAcct?'in':'soon'}">${inAcct?'já caiu':'a cair'}</div></div></div>`;
+  }).join('');
+  view.innerHTML=`
+    <div class="ceiling">
+      <div class="tag">Você pode gastar até</div>
+      <div class="amount"><small>R$</small>${brl(total)}</div>
+      <div class="sub">É tudo que entra na sua conta em <b>${MESES[Mo.m-1]}</b>. Não importa quanto você trabalha agora; conta o que o hospital paga aqui.</div>
+      <div class="meter"><div class="seg-in" style="width:${pAl}%"></div><div class="seg-soon" style="width:${pSo}%"></div></div>
+      <div class="split"><div class="s"><div class="lbl"><i style="background:var(--teal)"></i>já caiu</div><div class="v">R$ ${brl(already)}</div></div><div class="s"><div class="lbl"><i style="background:var(--amber)"></i>cai ainda este mês</div><div class="v">R$ ${brl(soon)}</div></div></div>
+    </div>
+    <div class="sec-title">O que forma esse teto</div>
+    ${entriesHtml}
+    ${mainWorkMonth?`<div class="insight"><div class="h">Por que não bate com o calendário</div><p>O maior pedaço do teto de ${MESES[Mo.m-1]} (<b>R$ ${brl(mainWorkMonth[1])}</b>) é trabalho de <b>${MESES[mainWorkMonth[0]-1]}</b>, que o hospital paga só agora. O que você trabalha em ${MESES[Mo.m-1]} vira teto mais pra frente.</p></div>`:''}`;
+}
+
+let payChoice='next', srcChoice='fixo', editingId=null;
+function setPay(v){ payChoice=v; document.querySelectorAll('#payOpts button').forEach(b=>b.classList.toggle('sel',b.dataset.pay===v)); document.getElementById('specWrap').style.display=v==='specific'?'block':'none'; }
+function setSrc(v){ srcChoice=v; document.querySelectorAll('#srcOpts button').forEach(b=>b.classList.toggle('sel',b.dataset.src===v)); document.getElementById('nameWrap').style.display=v==='nome'?'block':'none'; }
+function pickPay(btn){ setPay(btn.dataset.pay); }
+function pickSrc(btn){ setSrc(btn.dataset.src); }
+
+function openAdd(){
+  editingId=null;
+  const c=cur();
+  document.getElementById('addTitle').textContent='Novo plantão';
+  document.getElementById('addSub').textContent='Registre o turno e o app organiza o dinheiro';
+  document.getElementById('saveBtn').textContent='Salvar plantão';
+  const base=`${c.y}-${String(c.m).padStart(2,'0')}-15`;
+  document.getElementById('fStartDate').value=base;
+  document.getElementById('fStartTime').value='19:00';
+  document.getElementById('fEndDate').value=base;
+  document.getElementById('fEndTime').value='07:00';
+  document.getElementById('fAmount').value='';
+  document.getElementById('fName').value='';
+  document.getElementById('fPlace').value='Hospital Icaraí';
+  document.getElementById('fPayDate').value=`${c.y}-${String(c.m).padStart(2,'0')}-24`;
+  setPay('next'); setSrc('fixo'); openSheet('add');
+}
+function openEdit(id){
+  const s=shifts.find(x=>x.id===id); if(!s) return;
+  editingId=id;
+  document.getElementById('addTitle').textContent='Editar plantão';
+  document.getElementById('addSub').textContent='Ajuste o que precisar; o teto recalcula sozinho';
+  document.getElementById('saveBtn').textContent='Salvar alterações';
+  document.getElementById('fStartDate').value=s.startDate;
+  document.getElementById('fStartTime').value=s.startTime;
+  document.getElementById('fEndDate').value=s.endDate;
+  document.getElementById('fEndTime').value=s.endTime;
+  document.getElementById('fAmount').value=s.amount||'';
+  document.getElementById('fName').value=s.name||'';
+  document.getElementById('fPlace').value=s.place||'Hospital Icaraí';
+  document.getElementById('fPayDate').value=s.payDateValue||`${cur().y}-${String(cur().m).padStart(2,'0')}-24`;
+  setPay(s.pay); setSrc(s.src);
+  closeSheet('day'); openSheet('add');
+}
+function saveShift(){
+  const amt=parseFloat(document.getElementById('fAmount').value)||0;
+  const data={
+    startDate:document.getElementById('fStartDate').value,
+    startTime:document.getElementById('fStartTime').value,
+    endDate:document.getElementById('fEndDate').value,
+    endTime:document.getElementById('fEndTime').value,
+    amount:amt, pay:payChoice, src:srcChoice,
+    name:srcChoice==='nome'?document.getElementById('fName').value:'',
+    place:document.getElementById('fPlace').value||'Hospital Icaraí',
+  };
+  if(payChoice==='specific') data.payDateValue=document.getElementById('fPayDate').value;
+  if(!data.startDate){ alert('Informe o dia do plantão'); return; }
+  if(editingId){ const i=shifts.findIndex(s=>s.id===editingId); if(i>-1) shifts[i]={...shifts[i],...data}; }
+  else { data.id=newId(); shifts.push(data); }
+  save();
+  const [y,m]=data.startDate.split('-').map(Number);
+  state.cal.y=y; state.cal.m=m; syncLabel(); render(); closeSheet('add'); editingId=null;
+}
+
+function refreshCount(){ document.getElementById('countTitle').textContent=shifts.length; }
+function resetStep(step){
+  const area=document.getElementById('resetArea');
+  if(step===1){
+    area.innerHTML=`<div class="warn-box"><div class="wt">Tem certeza?</div><div class="wd">Isso apaga todos os ${shifts.length} plantões do calendário e zera os tetos. Não dá pra desfazer.</div></div><button class="danger-btn" onclick="resetStep(2)">Sim, quero resetar</button><button class="tiny-link" onclick="resetCancel()">Cancelar</button>`;
+  } else {
+    area.innerHTML=`<div class="warn-box"><div class="wt">Última confirmação</div><div class="wd">Ao tocar abaixo, tudo é apagado de vez e o app volta do zero.</div></div><button class="danger-btn danger-solid" onclick="resetConfirm()">Apagar tudo definitivamente</button><button class="tiny-link" onclick="resetCancel()">Cancelar</button>`;
+  }
+}
+function resetCancel(){ document.getElementById('resetArea').innerHTML=`<button class="danger-btn" onclick="resetStep(1)">Resetar app</button><div class="hint" style="text-align:center">Apaga todos os plantões e zera o app.</div>`; }
+function resetConfirm(){ shifts=[]; save(); resetCancel(); refreshCount(); render(); closeSheet('set'); }
+
+const sheetMap={day:['dayOverlay','daySheet'],add:['addOverlay','addSheet'],set:['setOverlay','setSheet']};
+function openSheet(which){
+  if(which==='set'){ refreshCount(); resetCancel(); }
+  const [ov,sh]=sheetMap[which];
+  document.getElementById(ov).classList.add('show');
+  requestAnimationFrame(()=>document.getElementById(sh).classList.add('show'));
+}
+function closeSheet(which){ const [ov,sh]=sheetMap[which]; document.getElementById(sh).classList.remove('show'); document.getElementById(ov).classList.remove('show'); }
+
+load(); syncLabel(); render();
+</script>
+</body>
+</html>
