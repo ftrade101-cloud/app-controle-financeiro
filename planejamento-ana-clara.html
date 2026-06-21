@@ -123,6 +123,41 @@ body{display:flex;align-items:center;justify-content:center;min-height:100vh;pad
 .insight p{font-size:12.5px;line-height:1.55;margin-top:8px;color:#A9CEC7}
 .insight p b{color:#EAF7F4;font-weight:600}
 
+.commit-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px;box-shadow:var(--shadow);margin-top:14px}
+.commit-h{font-family:'Bricolage Grotesque';font-weight:700;font-size:15px;letter-spacing:-.01em}
+.commit-sub{font-size:11.5px;color:var(--ink-soft);margin:4px 0 8px;line-height:1.45}
+.commit-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line)}
+.cr-left{flex:1;min-width:0}
+.cr-name{font-size:13.5px;font-weight:600}
+.cr-tag{font-family:'IBM Plex Mono';font-size:10px;color:var(--ink-soft);margin-top:2px}
+.cr-val{font-family:'Bricolage Grotesque';font-weight:700;font-size:15px;letter-spacing:-.02em}
+.cr-quit{font-family:'Inter';font-size:11.5px;font-weight:600;color:var(--teal-deep);background:var(--teal-bg-soft);border:1px solid var(--teal-bg);border-radius:9px;padding:6px 11px;cursor:pointer;transition:.14s;white-space:nowrap}
+.cr-quit:hover{background:var(--teal-bg)}
+.cr-confirm{display:flex;align-items:center;gap:6px}
+.cr-confirm .q{font-size:11.5px;color:var(--danger);font-weight:600;margin-right:2px}
+.cr-confirm button{font-family:'Inter';font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:9px;border:none;cursor:pointer}
+.cr-confirm .y{background:var(--teal);color:#fff}
+.cr-confirm .n{background:#EEF1F0;color:var(--ink-soft)}
+.add-debt{width:100%;margin-top:12px;background:var(--teal-bg-soft);border:1px dashed var(--teal);color:var(--teal-deep);border-radius:11px;padding:11px;font-family:'Inter';font-size:12.5px;font-weight:600;cursor:pointer;transition:.14s}
+.add-debt:hover{background:var(--teal-bg)}
+.debt-form{margin-top:12px;background:var(--teal-bg-soft);border-radius:12px;padding:12px}
+.debt-form .df-row{display:flex;gap:8px;margin-bottom:8px}
+.debt-form input{font-size:13px;padding:10px 11px}
+.debt-form .df-actions{display:flex;gap:8px}
+.debt-form .df-actions button{flex:1;font-family:'Inter';font-size:12.5px;font-weight:600;padding:10px;border-radius:10px;border:none;cursor:pointer}
+.df-add{background:var(--teal-deep);color:#fff}
+.df-cancel{background:#EEF1F0;color:var(--ink-soft)}
+.commit-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;border-top:2px solid var(--line);padding-top:13px}
+.commit-foot .cf-l{font-size:13px;font-weight:600;color:var(--ink)}
+.leftover{font-family:'Bricolage Grotesque';font-weight:700;font-size:23px;color:var(--amber);letter-spacing:-.02em}
+.leftover.neg{color:var(--danger)}
+.neg-note{font-size:11.5px;color:var(--danger);margin-top:9px;line-height:1.45}
+.inst-wrap{position:relative}
+.inst-wrap input{padding-right:52px;font-family:'IBM Plex Mono';font-weight:500}
+.inst-wrap span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--ink-soft)}
+.df-lab{display:block;font-size:11px;font-weight:600;color:var(--ink-soft);margin:0 0 5px 2px}
+.commit-empty{font-size:12px;color:var(--ink-soft);padding:12px 0;border-top:1px solid var(--line)}
+
 .empty{text-align:center;padding:50px 20px;color:var(--ink-soft)}
 .empty .big{font-family:'Bricolage Grotesque';font-weight:600;font-size:17px;color:var(--ink);margin-bottom:6px}
 .empty p{font-size:13px;line-height:1.5}
@@ -375,6 +410,47 @@ function load(){
 }
 function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(shifts)); }catch(e){} }
 
+// ---- compromissos: fixo (Medcurso) + dívidas editáveis ----
+const DEBTS_KEY = 'acplan_debts_v2';
+function seedDebts(){
+  const now=new Date(); const Y=now.getFullYear(), M=now.getMonth()+1;
+  return [
+    {id:newId(), name:'Medcurso',     total:3000, installments:1, startYear:Y, startMonth:M},
+    {id:newId(), name:'Dívida carro', total:200,  installments:2, startYear:Y, startMonth:M},
+  ];
+}
+let debts = [];
+function loadDebts(){ try{ const s=localStorage.getItem(DEBTS_KEY); if(s!==null){ debts=JSON.parse(s); return; } }catch(e){} debts=seedDebts(); saveDebts(); }
+function saveDebts(){ try{ localStorage.setItem(DEBTS_KEY, JSON.stringify(debts)); }catch(e){} }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// parcela devida por uma dívida em (ano,mês); null se não cai nesse mês
+function debtInstallmentFor(d, y, m){
+  const startIdx = d.startYear*12 + (d.startMonth-1);
+  const k = (y*12 + (m-1)) - startIdx;
+  if(k>=0 && k < d.installments) return { amount: d.total/d.installments, number:k+1, of:d.installments };
+  return null;
+}
+
+let debtUI = { adding:false, confirmId:null };
+function openDebtForm(){ debtUI.adding=true; debtUI.confirmId=null; renderMoney(); }
+function cancelDebtForm(){ debtUI.adding=false; renderMoney(); }
+function addDebt(){
+  const name=(document.getElementById('newDebtName').value||'').trim()||'Dívida';
+  const total=parseFloat(document.getElementById('newDebtTotal').value)||0;
+  const inst=parseInt(document.getElementById('newDebtInst').value)||1;
+  const startM=document.getElementById('newDebtStart').value;
+  if(total<=0){ alert('Informe o valor total da dívida'); return; }
+  if(inst<1){ alert('Informe em quantas vezes'); return; }
+  if(!startM){ alert('Informe o mês em que começa'); return; }
+  const [sy,sm]=startM.split('-').map(Number);
+  debts.push({id:newId(), name, total, installments:inst, startYear:sy, startMonth:sm});
+  saveDebts(); debtUI.adding=false; renderMoney();
+}
+function askQuit(id){ debtUI.confirmId=id; debtUI.adding=false; renderMoney(); }
+function cancelQuit(){ debtUI.confirmId=null; renderMoney(); }
+function quitDebt(id){ debts=debts.filter(d=>d.id!==id); saveDebts(); debtUI.confirmId=null; renderMoney(); }
+
 function payDate(s){
   if(s.pay==='cover') return null;
   if(s.pay==='pix') return s.startDate;
@@ -384,7 +460,7 @@ function payDate(s){
   return `${ny}-${String(nm).padStart(2,'0')}-24`;
 }
 const ym = d => d.slice(0,7);
-const brl = n => n.toLocaleString('pt-BR');
+const brl = n => { const r=Math.round(n*100)/100; return r.toLocaleString('pt-BR',{minimumFractionDigits:(r%1?2:0),maximumFractionDigits:2}); };
 
 const _now0 = new Date();
 let state = {
@@ -493,32 +569,77 @@ function fmtShort(d){ const [y,m,day]=d.split('-'); return `${+day} ${MES_CURTO[
 function renderMoney(){
   const Mo=state.money;
   const key=monthKey(Mo);
+  const mLabel=MESES[Mo.m-1];
   const incoming=shifts.filter(s=>{ const pd=payDate(s); return pd&&ym(pd)===key; }).map(s=>({...s,pd:payDate(s)})).sort((a,b)=>a.pd<b.pd?-1:1);
   const view=document.getElementById('moneyView');
-  if(incoming.length===0){ view.innerHTML=`<div class="empty"><div class="big">Nada entra em ${MESES[Mo.m-1]}</div><p>O teto deste mês é a soma do que cai na sua conta aqui. Registre plantões e eles aparecem no mês em que o dinheiro chega.</p></div>`; return; }
+
   const total=incoming.reduce((a,s)=>a+s.amount,0);
   const already=incoming.filter(s=>s.pd<=TODAY).reduce((a,s)=>a+s.amount,0);
   const soon=total-already;
   const pAl=total?(already/total*100):0, pSo=total?(soon/total*100):0;
-  const fromMonths={};
-  incoming.forEach(s=>{ const wm=+s.startDate.split('-')[1]; fromMonths[wm]=(fromMonths[wm]||0)+s.amount; });
-  const mainWorkMonth=Object.entries(fromMonths).sort((a,b)=>b[1]-a[1])[0];
+
+  // compromissos = parcelas que caem NESTE mês
+  const dueDebts = debts.map(d=>({ d, inst:debtInstallmentFor(d, Mo.y, Mo.m) })).filter(x=>x.inst);
+  const commitTotal = dueDebts.reduce((a,x)=>a+x.inst.amount,0);
+  const left = total - commitTotal;
+
+  // linha do ganho (timing já caiu / a cair) só quando há entrada
+  const timingHtml = incoming.length ? `
+      <div class="meter"><div class="seg-in" style="width:${pAl}%"></div><div class="seg-soon" style="width:${pSo}%"></div></div>
+      <div class="split"><div class="s"><div class="lbl"><i style="background:var(--teal)"></i>já caiu</div><div class="v">R$ ${brl(already)}</div></div><div class="s"><div class="lbl"><i style="background:var(--amber)"></i>cai ainda este mês</div><div class="v">R$ ${brl(soon)}</div></div></div>` : '';
+
+  // dívidas que caem neste mês (cada uma com sua parcela)
+  const debtRows = dueDebts.length ? dueDebts.map(({d,inst})=>{
+    const lbl = inst.of>1 ? `parcela ${inst.number}/${inst.of}` : 'à vista';
+    if(debtUI.confirmId===d.id){
+      return `<div class="commit-row"><div class="cr-left"><div class="cr-name">${esc(d.name)}</div><div class="cr-tag">quita todas as parcelas</div></div><div class="cr-confirm"><span class="q">Quitar?</span><button class="n" onclick="cancelQuit()">Não</button><button class="y" onclick="quitDebt('${d.id}')">Quitar</button></div></div>`;
+    }
+    return `<div class="commit-row"><div class="cr-left"><div class="cr-name">${esc(d.name)}</div><div class="cr-tag">${lbl}</div></div><div style="display:flex;align-items:center;gap:10px"><div class="cr-val">R$ ${brl(inst.amount)}</div><button class="cr-quit" onclick="askQuit('${d.id}')">Quitar</button></div></div>`;
+  }).join('') : `<div class="commit-empty">Nenhuma dívida pra separar em ${mLabel}.</div>`;
+
+  // adicionar dívida (valor total + nº de parcelas + mês de início)
+  const addHtml = debtUI.adding
+    ? `<div class="debt-form">
+        <input id="newDebtName" type="text" placeholder="Nome da dívida (ex: Carro)" style="margin-bottom:8px">
+        <div class="df-row">
+          <div class="amt-wrap" style="flex:1.5"><span>R$</span><input id="newDebtTotal" type="number" inputmode="numeric" placeholder="valor total"></div>
+          <div class="inst-wrap" style="flex:1"><input id="newDebtInst" type="number" inputmode="numeric" min="1" value="1"><span>vezes</span></div>
+        </div>
+        <label class="df-lab">Começa em</label>
+        <input id="newDebtStart" type="month" value="${monthKey(Mo)}" style="margin-bottom:10px">
+        <div class="df-actions"><button class="df-cancel" onclick="cancelDebtForm()">Cancelar</button><button class="df-add" onclick="addDebt()">Adicionar</button></div>
+      </div>`
+    : `<button class="add-debt" onclick="openDebtForm()">+ Adicionar dívida</button>`;
+
   const entriesHtml=incoming.map(s=>{
     const isPix=s.pay==='pix', inAcct=s.pd<=TODAY, wm=+s.startDate.split('-')[1];
     const title=isPix?`Pix · plantão ${(+s.startDate.split('-')[2])} ${MES_CURTO[wm-1]}`:`Plantão ${(+s.startDate.split('-')[2])} ${MES_CURTO[wm-1]}`;
     return `<div class="entry ${isPix?'pix':''}"><div class="ic">${isPix?'⚡':'🩺'}</div><div class="mid"><div class="t">${title}</div><div class="d">trabalho de ${MESES[wm-1]} · cai ${fmtShort(s.pd)}</div></div><div class="right"><div class="val">R$ ${brl(s.amount)}</div><div class="st ${inAcct?'in':'soon'}">${inAcct?'já caiu':'a cair'}</div></div></div>`;
   }).join('');
+
+  const fromMonths={};
+  incoming.forEach(s=>{ const wm=+s.startDate.split('-')[1]; fromMonths[wm]=(fromMonths[wm]||0)+s.amount; });
+  const mainWorkMonth=Object.entries(fromMonths).sort((a,b)=>b[1]-a[1])[0];
+
   view.innerHTML=`
     <div class="ceiling">
-      <div class="tag">Você pode gastar até</div>
-      <div class="amount"><small>R$</small>${brl(total)}</div>
-      <div class="sub">É tudo que entra na sua conta em <b>${MESES[Mo.m-1]}</b>. Não importa quanto você trabalha agora; conta o que o hospital paga aqui.</div>
-      <div class="meter"><div class="seg-in" style="width:${pAl}%"></div><div class="seg-soon" style="width:${pSo}%"></div></div>
-      <div class="split"><div class="s"><div class="lbl"><i style="background:var(--teal)"></i>já caiu</div><div class="v">R$ ${brl(already)}</div></div><div class="s"><div class="lbl"><i style="background:var(--amber)"></i>cai ainda este mês</div><div class="v">R$ ${brl(soon)}</div></div></div>
+      <div class="tag">Você ganha em ${mLabel}</div>
+      <div class="amount" style="color:var(--teal-deep)"><small>R$</small>${brl(total)}</div>
+      <div class="sub">${incoming.length?`Tudo que cai na sua conta em <b>${mLabel}</b>. É daqui que saem seus compromissos e o que sobra pra gastar.`:`Nenhum plantão cai em <b>${mLabel}</b> ainda. Mesmo assim, seus compromissos do mês continuam abaixo.`}</div>
+      ${timingHtml}
     </div>
-    <div class="sec-title">O que forma esse teto</div>
-    ${entriesHtml}
-    ${mainWorkMonth?`<div class="insight"><div class="h">Por que não bate com o calendário</div><p>O maior pedaço do teto de ${MESES[Mo.m-1]} (<b>R$ ${brl(mainWorkMonth[1])}</b>) é trabalho de <b>${MESES[mainWorkMonth[0]-1]}</b>, que o hospital paga só agora. O que você trabalha em ${MESES[Mo.m-1]} vira teto mais pra frente.</p></div>`:''}`;
+
+    <div class="commit-card">
+      <div class="commit-h">Separe antes de gastar</div>
+      <div class="commit-sub">Parcelas de dívidas que caem em ${mLabel}. Tire do total antes de pensar em gastar.</div>
+      ${debtRows}
+      ${addHtml}
+      <div class="commit-foot"><div class="cf-l">Sobra pra gastar</div><div class="leftover ${left<0?'neg':''}">R$ ${brl(left)}</div></div>
+      ${left<0?`<div class="neg-note">Os compromissos passam do que entra em ${mLabel}. Atenção pra não usar o cartão além disso.</div>`:''}
+    </div>
+
+    ${incoming.length?`<div class="sec-title">O que forma o que entra</div>${entriesHtml}`:''}
+    ${(incoming.length&&mainWorkMonth)?`<div class="insight"><div class="h">Por que não bate com o calendário</div><p>O maior pedaço do que entra em ${mLabel} (<b>R$ ${brl(mainWorkMonth[1])}</b>) é trabalho de <b>${MESES[mainWorkMonth[0]-1]}</b>, que o hospital paga só agora. O que você trabalha em ${mLabel} entra mais pra frente.</p></div>`:''}`;
 }
 
 let payChoice='next', srcChoice='fixo', editingId=null;
@@ -591,7 +712,7 @@ function resetStep(step){
   }
 }
 function resetCancel(){ document.getElementById('resetArea').innerHTML=`<button class="danger-btn" onclick="resetStep(1)">Resetar app</button><div class="hint" style="text-align:center">Apaga todos os plantões e zera o app.</div>`; }
-function resetConfirm(){ shifts=[]; save(); resetCancel(); refreshCount(); render(); closeSheet('set'); }
+function resetConfirm(){ shifts=[]; save(); debts=seedDebts(); saveDebts(); debtUI={adding:false,confirmId:null}; resetCancel(); refreshCount(); render(); closeSheet('set'); }
 
 const sheetMap={day:['dayOverlay','daySheet'],add:['addOverlay','addSheet'],set:['setOverlay','setSheet']};
 function openSheet(which){
@@ -602,7 +723,7 @@ function openSheet(which){
 }
 function closeSheet(which){ const [ov,sh]=sheetMap[which]; document.getElementById(sh).classList.remove('show'); document.getElementById(ov).classList.remove('show'); }
 
-load(); syncLabel(); render();
+load(); loadDebts(); syncLabel(); render();
 </script>
 </body>
 </html>
